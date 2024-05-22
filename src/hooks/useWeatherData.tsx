@@ -1,13 +1,14 @@
 import {useState} from "react";
+import {ForecastDays, ForecastDayHour} from "../utils/types";
 // import webpack  from  "webpack";  // доустановили
 // import dotenv from "dotenv";      // пакеты   "webpack": "^5.91.0",
-// "webpack-cli": "^5.1.4" 
+// "webpack-cli": "^5.1.4"
 
 
 // module.exports = () => {
-//   // dotenv вернет объект с полем parsed 
+//   // dotenv вернет объект с полем parsed
 //   const env = dotenv.config().parsed;
-  
+
 //   сделаем reduce, чтобы сделать объект
 //   const envKeys = Object.keys(env).reduce((prev, next) => {
 //     prev[`process.env.${next}`] = JSON.stringify(env[next]);
@@ -33,7 +34,6 @@ interface WeatherData {
         lon: number;
         lat: number;
     },
-
     weather: [
         {
             id: number;
@@ -42,7 +42,6 @@ interface WeatherData {
             icon: string;
         }
     ],
-    //base: string; // ???????????????????????
     base: string;
     main: {
         temp: number; // текущая температура
@@ -59,51 +58,38 @@ interface WeatherData {
     },
     timezone: number;
     id: number;
+    dt: number;
     name: string; // название города
     cod: number; // код города
 }
+
+// http://api.geonames.org/
+
+// Google Geocoding API.
+// Активизируйте в своем гугл-аккаунте этот сервис, создайте API Key для запросов,
+//  после чего посылайте запрос
+//  с именем населенного пункта и указанием русского языка для возврата данных:
+//  https://maps.googleapis.com/maps/api/geocode/json?key=сгенерированныйключ&language=ru&address=Dzyarzhynsk
+
 
 interface FetchDataProps {
     name?: string;
 }
 
-// https://api.openweathermap.org/data/3.0/  
+// https://api.openweathermap.org/data/3.0/
 // onecall?lat={lat}&lon={lon}&exclude=hourly,daily,alerts&appid={API key}
-interface ForecastData {
-     
-    // lon: number;
-    // lat: number;
-    // "timezone":"America/Chicago",
-    // "timezone_offset":-18000,
-    // current:{
-    //     temp: number;
-    //     // feels_like: number;
-    //     // pressure: number;
-    //     // humidity: number;
-
-    //     visibility: number;
-    //     wind_speed: number;
-    //     wind_deg: number;
-    //     weather:[
-            // {
-            //     id:number;
-            // // "main":"Clouds",
-            //     main: string;
-            // // "description":"broken clouds",
-            //     description: string,
-            //     // "icon":"04d"  ????????????????????????????????
-            // }
-
+interface ForecastResponseData {
     city: {
         coord:{
-            country: string; 
+            country: string;
             id: number;
             name: string;
         }
     },
 
-    list: [    
-            { 
+    list: [
+        {
+            dt: number;
             dt_txt: string;
             main: {
                 feels_like: number;
@@ -123,20 +109,48 @@ interface ForecastData {
             //         icon: string;
             //     }
             // ];
-        }] 
+        }]
 
+}
+
+// метод для преобразования наших данных
+const transformData = (forecastResponseData: ForecastResponseData): ForecastDays => {
+    const result: ForecastDays = {};
+    forecastResponseData.list?.map((item) => {
+
+        const date = String(new Date(item.dt_txt).getDate());
+        // const date = (new Date(item.dt_txt).getDate()); // date: number
+        const dayOfMonth = 1;
+        // const monthName = new Date(item.dt_txt).toLocaleString('default', { month: 'long' });
+
+        const hour = new Date(item.dt_txt).getHours();
+        const newHour: ForecastDayHour = {
+            hour,
+            feels_like: item.main.feels_like,
+            temp: item.main.temp,
+            temp_max: item.main.temp_max,
+            temp_min: item.main.temp_min,
+        }
+        if (result[date]) {
+            result[date].hours.push(newHour)
+        } else {
+            result[date] = {
+                dt_txt: item.dt_txt,
+                hours: [newHour]
+            }
+        }
+    });
+
+    return result;
 }
 
 const useWeatherData = () => {
     const [data, setData] = useState<WeatherData | null>(null);
-    const [forecast, setForecast] = useState<ForecastData | null>(null);
+    const [forecast, setForecast] = useState<ForecastDays | null>(null);
     const [isLoading, setLoading] = useState(false);
 
 
     // запрос за текущими данными
-
-    // const fetchData = ({ name = 'London' }: FetchDataProps) => {
-
     const fetchData = ({ name = 'Moscow' }: FetchDataProps) => {
         setLoading(true);
         fetch(
@@ -156,8 +170,8 @@ const useWeatherData = () => {
             `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
         )
             .then(res => res.json()) // about https://developer.mozilla.org/en-US/docs/Web/API/Response/json
-            .then((forecastResponseData: ForecastData) => {
-                setForecast(forecastResponseData);
+            .then((forecastResponseData: ForecastResponseData) => {
+                setForecast(transformData(forecastResponseData));
             })
     }
 
