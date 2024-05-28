@@ -1,10 +1,13 @@
-﻿import { ChangeEvent, FormEvent, useState, useEffect } from 'react';
+import { ChangeEvent, FormEvent, useState, useEffect } from 'react';
 import useWeatherData from "./hooks/useWeatherData";
 import './App.css';
 import ForecastCard from './components/ForecastCard/ForecastCard';
+import Header from "./components/Header/Header";
+import {ThemeContext} from "./contexts/ThemeContext";
+
 
 function App() {
-  const { data, forecast, isLoading, fetchData } = useWeatherData();
+  const { data, forecast, isLoading, error, fetchData } = useWeatherData();
 
   // if (forecast) {
   // for (const i of forecast) forecast // Type 'ForecastDays' must have a '[Symbol.iterator]()' method that returns an iterator.
@@ -14,8 +17,9 @@ function App() {
   // }
 
   const [cityName, setCityName] = useState('');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {  
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     fetchData({ name: cityName });
     setCityName('');
@@ -32,12 +36,10 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ThemeContext.Provider value={{ value: theme, changeValue: setTheme }}>
       <div className="info_panel">
-        <form 
-          name="myForm"
-          className="search-form" 
-          onSubmit={handleSubmit}>
+        <Header />
+        <form name="myForm" className="search-form" onSubmit={handleSubmit}>
             <input
               type="text"
               value={cityName}
@@ -45,53 +47,52 @@ function App() {
               className="input_field"
               placeholder="Введите название города"
             />
-            <button
-              className='search-button'
-              type="submit">Поиск
+            <button className="search-button" type="submit" disabled={!cityName}>
+              Поиск
             </button>
         </form>
 
         {isLoading ? (
             <div>Загрузка...</div>
         ) : (
-              <>
-                <div className='city-info'>
-                  <div className='city_name'>
-                    {data?.name}
-                  </div>
+              <div className="city-info">
+                <div className='city_name'>
+                  {error ? error : data?.name}
+                </div>
 
-                  <div className="current_date">
-                    {currentDate && (
-                      <div>сегодня {currentDate}</div>
+                <div className="current_date">
+                  {currentDate && (
+                    <div>сегодня {currentDate}</div>
+                  )}
+                </div>
+
+
+
+                <div className='temp'>
+                  <span>{data?.main?.temp.toFixed(1)}</span><span>&deg;C</span>
+                </div>
+
+                <div className='forecast'>
+                  <div>
+                    <span>прогноз погоды</span>
+                  </div>
+                  <div className='forecast__daily'>
+                    {forecast ? Object.keys(forecast).map((key) => {
+                        console.log(key)
+                        return (
+                          <ForecastCard key={key} day={forecast[key].dt_txt} hours={forecast[key].hours}/>
+                        )
+                    }) : (
+                        <span>Данных о прогнозе погоды нет</span>
                     )}
-                  </div>
 
-                  <div className='temp'>
-                    <span>{data?.main?.temp.toFixed(1)}</span><span>&deg;C</span>
-                  </div>
-
-                  <div className='forecast'>
-                    <div>
-                      <span>прогноз погоды</span>
-                    </div>
-                    <div className='forecast__daily'>
-
-                      {forecast ? Object.keys(forecast).map((key) => {
-                          return (
-                              <ForecastCard key={key} day={forecast[key].dt_txt} hours={forecast[key].hours}/>
-                          )
-                      }) : (
-                          <span>Данных о прогнозе погоды нет</span>
-                      )}
-
-                    </div>
                   </div>
                 </div>
-              </>
+              </div>
             )
         }
       </div>
-    </>
+    </ThemeContext.Provider>
   )
 }
 

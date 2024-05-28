@@ -115,15 +115,16 @@ interface ForecastResponseData {
 
 // метод для преобразования наших данных
 const transformData = (forecastResponseData: ForecastResponseData): ForecastDays => {
+    // const result: ForecastDays = {};
     const result: ForecastDays = {};
     forecastResponseData.list?.map((item) => {
-
-        const date = String(new Date(item.dt_txt).getDate());
-        // const date = (new Date(item.dt_txt).getDate()); // date: number
-        const dayOfMonth = 1;
+        
+  
+        const date = item.dt_txt.slice(0,10); // example of date : '2024-06-01'
+        //const datee = String(item.dt);
         // const monthName = new Date(item.dt_txt).toLocaleString('default', { month: 'long' });
 
-        const hour = new Date(item.dt_txt).getHours();
+        const hour = new Date(item.dt_txt).getHours();  // получаем часы
         const newHour: ForecastDayHour = {
             hour,
             feels_like: item.main.feels_like,
@@ -134,13 +135,18 @@ const transformData = (forecastResponseData: ForecastResponseData): ForecastDays
         if (result[date]) {
             result[date].hours.push(newHour)
         } else {
-            result[date] = {
+            result[date] = {        
+        // if (result[date]) {
+        //     result[date].hours.push(newHour)
+        // } else {
+        //     result[date] = {
+                first_dt: item.dt,        ////// new
                 dt_txt: item.dt_txt,
                 hours: [newHour]
             }
         }
     });
-
+    console.log('result', result);
     return result;
 }
 
@@ -148,6 +154,7 @@ const useWeatherData = () => {
     const [data, setData] = useState<WeatherData | null>(null);
     const [forecast, setForecast] = useState<ForecastDays | null>(null);
     const [isLoading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
 
     // запрос за текущими данными
@@ -156,10 +163,21 @@ const useWeatherData = () => {
         fetch(
             `https://api.openweathermap.org/data/2.5/weather?q=${name}&units=metric&appid=${API_KEY}`
         )
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    setError('Такого города не существует');
+                    return null;
+                }
+                setError('');
+                return res.json()
+            })
             .then((responseData: WeatherData) => {
                 setData(responseData);
-                fetchForecast(responseData.coord.lat, responseData.coord.lon);
+                if (responseData) {
+                    fetchForecast(responseData.coord.lat, responseData.coord.lon);
+                    return;
+                }
+                setForecast(null);
             }).finally(() => {
             setLoading(false);
         });
@@ -169,12 +187,13 @@ const useWeatherData = () => {
         fetch(
             `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
         )
-            .then(res => res.json()) // about https://developer.mozilla.org/en-US/docs/Web/API/Response/json
+            .then(res => res.json()) 
+            // about https://developer.mozilla.org/en-US/docs/Web/API/Response/json
             .then((forecastResponseData: ForecastResponseData) => {
                 setForecast(transformData(forecastResponseData));
             })
     }
 
-    return { data, forecast, isLoading, fetchData };
+    return { data, forecast, isLoading, error, fetchData };
 };
 export default useWeatherData;
