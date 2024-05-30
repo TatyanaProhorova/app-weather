@@ -1,0 +1,6 @@
+// пример создания миксина -- ПРИМЕР
+@mixin center-inner-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

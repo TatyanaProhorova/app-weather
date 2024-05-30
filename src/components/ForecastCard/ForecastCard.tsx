@@ -28,8 +28,8 @@ return(
         </button>
 
         <ul className={isOpen ? "dropdown-active" : "dropdown"}>
-          {hours.map((hourItem) => (
-              <li className="dropdown__item">
+          {hours.map((hourItem, index) => (
+              <li className="dropdown__item" key={index}>
                   <div>{`${hourItem.hour}:00`}</div>
                   <div><span>{hourItem.temp.toFixed(0)}&deg;C</span></div>
               </li>

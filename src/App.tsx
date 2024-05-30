@@ -1,10 +1,10 @@
 import { ChangeEvent, FormEvent, useState, useEffect } from 'react';
 import useWeatherData from "./hooks/useWeatherData";
-import './App.css';
 import ForecastCard from './components/ForecastCard/ForecastCard';
 import Header from "./components/Header/Header";
 import {ThemeContext} from "./contexts/ThemeContext";
 
+import './App.scss';
 
 function App() {
   const { data, forecast, isLoading, error, fetchData } = useWeatherData();
@@ -34,6 +34,10 @@ function App() {
   useEffect(() => {
     fetchData({});
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+}, [theme])
 
   return (
     <ThemeContext.Provider value={{ value: theme, changeValue: setTheme }}>
@@ -65,8 +69,6 @@ function App() {
                     <div>сегодня {currentDate}</div>
                   )}
                 </div>
-
-
 
                 <div className='temp'>
                   <span>{data?.main?.temp.toFixed(1)}</span><span>&deg;C</span>

@@ -36,6 +36,8 @@
 }
 
 .forecast__button {
+  background-color: var(--background-color);
+  color: var(--text-color);
   padding: 5px;
   height: 80px;
 }
