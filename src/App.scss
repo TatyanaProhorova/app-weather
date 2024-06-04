@@ -41,8 +41,10 @@
 .foreCast__daily {
     display: flex;
     align-items: flex-start;
+    &:last-child {
+      display: none;
+    }
 }
-
 
 .search-button:disabled {
   background-color: rgb(164, 157, 157);
