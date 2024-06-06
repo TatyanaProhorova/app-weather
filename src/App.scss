@@ -41,9 +41,6 @@
 .foreCast__daily {
     display: flex;
     align-items: flex-start;
-    &:last-child {
-      display: none;
-    }
 }
 
 .search-button:disabled {

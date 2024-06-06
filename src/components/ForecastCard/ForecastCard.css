@@ -33,6 +33,13 @@
   flex-direction: column;
   width: 13%;
   margin: 5px;
+  &:last-child {
+    display: none;
+  }
+}
+
+.forecast__card:last-child {
+  display: none;
 }
 
 .forecast__button {

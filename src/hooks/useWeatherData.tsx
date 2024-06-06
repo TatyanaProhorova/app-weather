@@ -21,7 +21,9 @@ import {ForecastDays, ForecastDayHour} from "../utils/types";
 //     ]
 //   };
 // }
-const API_KEY = "aa31822992d867d5cdbc0d5461abd90a";
+//const API_KEY = "aa31822992d867d5cdbc0d5461abd90a";
+
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 // const API_KEY = process.env.REACT_APP_API_KEY;
 

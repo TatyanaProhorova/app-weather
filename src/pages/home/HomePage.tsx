@@ -21,10 +21,6 @@ function HomePage() {
         setCityName(event.target.value);
     }
 
-    // const handieGoTologinPage=()=>{
-    //     window.location.assign('')
-    // }
-
     useEffect(() => {
         fetchData({});
     }, []);
@@ -65,7 +61,7 @@ function HomePage() {
 
                     <div className='forecast'>
                         <div>
-                            <span>прогноз погоды</span>
+                            <span className="forecast__title">прогноз погоды</span>
                         </div>
                         <div className='forecast__daily'>
                             {forecast ? Object.keys(forecast).map((key) => {
